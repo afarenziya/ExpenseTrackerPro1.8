@@ -75,7 +75,7 @@ export function Sidebar() {
           <div className="bg-primary rounded-lg p-2">
             <PieChart className="text-primary-foreground" />
           </div>
-          <h1 className="text-xl font-bold text-sidebar-foreground">AjayFarenziya</h1>
+          <h1 className="text-xl font-bold text-sidebar-foreground">ExpenseTracker</h1>
         </div>
         <button 
           className="md:hidden text-sidebar-foreground focus:outline-none" 
