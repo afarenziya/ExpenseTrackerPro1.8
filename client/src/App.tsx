@@ -33,6 +33,8 @@ function Router() {
   );
 }
 
+import { Footer } from "./components/layout/footer";
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -43,6 +45,7 @@ function App() {
               <main className="flex-1">
                 <Router />
               </main>
+              <Footer />
             </div>
             <Toaster />
           </TooltipProvider>
