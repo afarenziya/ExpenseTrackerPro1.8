@@ -24,7 +24,7 @@ interface RequestWithFile extends Request {
 export async function registerRoutes(app: Express): Promise<Server> {
   // setup authentication routes
   setupAuth(app);
-
+  
   // API middleware to check authentication
   const requireAuth = (req: Request, res: Response, next: Function) => {
     if (!req.isAuthenticated()) {
@@ -32,6 +32,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   };
+  
+  // User management routes (admin only)
+  app.get("/api/users/pending", requireAuth, async (req, res) => {
+    // Check if user is admin
+    if (req.user?.role !== "admin") {
+      return res.status(403).send("Only administrators can access this resource");
+    }
+
+    try {
+      const pendingUsers = await storage.getPendingUsers();
+      res.json(pendingUsers);
+    } catch (error) {
+      console.error("Error fetching pending users:", error);
+      res.status(500).send("Failed to fetch pending users");
+    }
+  });
+
+  app.post("/api/users/:id/approve", requireAuth, async (req, res) => {
+    // Check if user is admin
+    if (req.user?.role !== "admin") {
+      return res.status(403).send("Only administrators can approve user accounts");
+    }
+
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) {
+      return res.status(400).send("Invalid user ID");
+    }
+
+    try {
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+
+      if (user.status === "active") {
+        return res.status(400).send("User is already active");
+      }
+
+      const updatedUser = await storage.updateUserStatus(userId, "active");
+      
+      // Send approval email
+      const { sendApprovalEmail } = await import('./email');
+      await sendApprovalEmail(user.email, user.name || user.username);
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error approving user:", error);
+      res.status(500).send("Failed to approve user");
+    }
+  });
+
+  app.post("/api/users/:id/reject", requireAuth, async (req, res) => {
+    // Check if user is admin
+    if (req.user?.role !== "admin") {
+      return res.status(403).send("Only administrators can reject user accounts");
+    }
+
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) {
+      return res.status(400).send("Invalid user ID");
+    }
+
+    try {
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+
+      if (user.status === "rejected") {
+        return res.status(400).send("User is already rejected");
+      }
+
+      const updatedUser = await storage.updateUserStatus(userId, "rejected");
+      
+      // Send rejection email
+      const { sendRejectionEmail } = await import('./email');
+      await sendRejectionEmail(user.email, user.name || user.username);
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error rejecting user:", error);
+      res.status(500).send("Failed to reject user");
+    }
+  });
 
   // ========== Category Routes ==========
   

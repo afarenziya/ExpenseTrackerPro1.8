@@ -24,7 +24,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Loader2, PieChart } from "lucide-react";
+import { 
+  Alert,
+  AlertTitle,
+  AlertDescription 
+} from "@/components/ui/alert";
+import { Loader2, PieChart, CheckCircle } from "lucide-react";
 
 // Extend schemas for better validation
 const loginSchema = userLoginSchema.extend({
@@ -36,6 +41,7 @@ const registerSchema = insertUserSchema.extend({
   username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().min(1, "Name is required"),
+  email: z.string().email("Please enter a valid email address"),
   confirmPassword: z.string().min(1, "Please confirm your password"),
 }).superRefine(({ password, confirmPassword }, ctx) => {
   if (password !== confirmPassword) {
@@ -51,6 +57,7 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
+  const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -75,8 +82,10 @@ export default function AuthPage() {
       username: "",
       password: "",
       name: "",
+      email: "",
       confirmPassword: "",
       role: "user",
+      status: "pending", // Set status to pending by default
     },
   });
 
@@ -86,7 +95,13 @@ export default function AuthPage() {
 
   const onRegisterSubmit = (values: z.infer<typeof registerSchema>) => {
     const { confirmPassword, ...registerData } = values;
-    registerMutation.mutate(registerData);
+    registerMutation.mutate(registerData, {
+      onSuccess: () => {
+        setShowRegistrationSuccess(true);
+        registerForm.reset();
+        setActiveTab("login");
+      }
+    });
   };
 
   return (
@@ -146,6 +161,16 @@ export default function AuthPage() {
               </TabsList>
               
               <TabsContent value="login">
+                {showRegistrationSuccess && (
+                  <Alert className="mb-4">
+                    <CheckCircle className="h-4 w-4" />
+                    <AlertTitle>Registration Successful!</AlertTitle>
+                    <AlertDescription>
+                      Your account has been created and is pending approval from the administrator.
+                      You'll receive an email once your account is approved.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <Form {...loginForm}>
                   <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                     <FormField
@@ -210,6 +235,19 @@ export default function AuthPage() {
                           <FormLabel>Username</FormLabel>
                           <FormControl>
                             <Input placeholder="Choose a username" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={registerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="Enter your email address" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
