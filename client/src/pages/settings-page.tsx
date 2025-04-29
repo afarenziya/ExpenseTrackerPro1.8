@@ -177,7 +177,7 @@ export default function SettingsPage() {
             <CardTitle>About</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <p className="text-sm">AjayFarenziya Expense Manager</p>
+            <p className="text-sm">ExpenseTracker Made By Ajay Farenziya</p>
             <p className="text-sm text-muted-foreground">Version 1.0.0</p>
             <p className="text-sm text-muted-foreground">© 2023 AjayFarenziya</p>
           </CardContent>

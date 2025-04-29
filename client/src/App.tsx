@@ -40,7 +40,6 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             <div className="min-h-screen flex flex-col">
-              <Header />
               <main className="flex-1">
                 <Router />
               </main>

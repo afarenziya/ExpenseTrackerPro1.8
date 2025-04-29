@@ -233,7 +233,7 @@ export default function AuthPage() {
               <PieChart className="h-10 w-10 text-primary-foreground" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold mb-4">AjayFarenziya Expense Manager</h1>
+          <h1 className="text-3xl font-bold mb-4">ExpenseTracker Made By Ajay Farenziya</h1>
           <p className="text-muted-foreground mb-6">
             A comprehensive solution for tracking, managing, and analyzing your company's expenses.
             Get detailed reports, visualize spending patterns, and make informed financial decisions.

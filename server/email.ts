@@ -40,7 +40,7 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
 }
 
 export async function sendRegistrationEmail(email: string, name: string): Promise<boolean> {
-  const subject = 'Registration Successful - AjayFarenziya Expense Manager';
+  const subject = 'Registration Successful - ExpenseTracker Made By Ajay Farenziya';
   const text = `
     Hello ${name},
     
