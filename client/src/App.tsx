@@ -11,6 +11,7 @@ import ReportsPage from "@/pages/reports-page";
 import SettingsPage from "@/pages/settings-page";
 import UserManagementPage from "@/pages/user-management-page";
 import AuthPage from "@/pages/auth-page";
+import ResetPasswordPage from "@/pages/reset-password-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 
@@ -24,6 +25,7 @@ function Router() {
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/users" component={UserManagementPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
       <Route component={NotFound} />
     </Switch>
   );
