@@ -147,7 +147,14 @@ export class MemStorage implements IStorage {
       const existingUser = await this.getUserByUsername(userData.username);
       if (!existingUser) {
         const id = this.userCurrentId++;
-        const user: User = { ...userData, id };
+        const user: User = { 
+          ...userData, 
+          id,
+          mobile: null,
+          resetToken: null,
+          resetTokenExpiry: null,
+          lastLogin: null
+        };
         this.users.set(id, user);
         
         // Create default categories for each user
@@ -362,7 +369,13 @@ export class MemStorage implements IStorage {
 
   async createExpense(insertExpense: InsertExpense): Promise<Expense> {
     const id = this.expenseCurrentId++;
-    const expense: Expense = { ...insertExpense, id, createdAt: new Date() };
+    const expense: Expense = { 
+      ...insertExpense, 
+      id, 
+      createdAt: new Date(),
+      description: insertExpense.description || null,
+      receiptPath: insertExpense.receiptPath || null 
+    };
     this.expenses.set(id, expense);
     return expense;
   }

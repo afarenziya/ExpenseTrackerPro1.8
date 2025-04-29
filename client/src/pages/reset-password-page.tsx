@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { passwordResetSchema } from "@shared/schema";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,21 +42,16 @@ function useURLToken() {
   return searchParams.get('token');
 }
 
-// Extend password reset schema for better validation
+// Define the password reset schema
 const resetPasswordSchema = z.object({
-  token: z.string(),
+  token: z.string().min(1, "Reset token is required"),
   password: z.string()
     .min(8, "Password must be at least 8 characters")
     .regex(/^(?=.*[0-9])(?=.*[!@#$%^&*])/, "Password must include a number and a symbol"),
   confirmPassword: z.string().min(1, "Please confirm your password"),
-}).superRefine(({ password, confirmPassword }: { password: string, confirmPassword: string }, ctx) => {
-  if (password !== confirmPassword) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Passwords do not match",
-      path: ["confirmPassword"],
-    });
-  }
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 export default function ResetPasswordPage() {
