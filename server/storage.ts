@@ -148,10 +148,17 @@ export class MemStorage implements IStorage {
       const existingUser = await this.getUserByUsername(userData.username);
       if (!existingUser) {
         const id = this.userCurrentId++;
+        // Ensure all required fields are properly typed
         const user: User = { 
-          ...userData, 
           id,
+          username: userData.username,
+          password: userData.password,
+          name: userData.name,
+          email: userData.email,
           mobile: null,
+          role: userData.role as UserRole,
+          status: userData.status as UserStatus,
+          createdAt: userData.createdAt,
           resetToken: null,
           resetTokenExpiry: null,
           lastLogin: null
@@ -266,15 +273,23 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
+    
+    // Ensure all required fields are properly typed
     const user: User = { 
-      ...insertUser, 
       id,
-      createdAt: new Date(),
+      username: insertUser.username,
+      password: insertUser.password,
+      name: insertUser.name || null,
+      email: insertUser.email,
       mobile: insertUser.mobile || null,
+      role: insertUser.role,
+      status: insertUser.status || "pending",
+      createdAt: new Date(),
       resetToken: null,
       resetTokenExpiry: null,
       lastLogin: null
     };
+    
     this.users.set(id, user);
     
     // Create default categories for the new user

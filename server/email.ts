@@ -16,13 +16,22 @@ interface EmailParams {
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
   try {
-    await mailService.send({
+    const messageParams = {
       to: params.to,
       from: 'noreply@ajayfarenziya.com', // Replace with your verified sender
       subject: params.subject,
-      text: params.text,
-      html: params.html,
+      text: params.text || params.subject, // Fallback to subject if text is not provided
+      html: params.html || undefined // Make sure html is either a string or undefined
+    };
+    
+    // Remove undefined properties
+    Object.keys(messageParams).forEach(key => {
+      if (messageParams[key as keyof typeof messageParams] === undefined) {
+        delete messageParams[key as keyof typeof messageParams];
+      }
     });
+    
+    await mailService.send(messageParams);
     return true;
   } catch (error) {
     console.error('SendGrid email error:', error);
