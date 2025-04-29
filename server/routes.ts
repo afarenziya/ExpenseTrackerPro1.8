@@ -69,8 +69,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Category not found" });
     }
     
-    if (category.userId !== userId) {
-      return res.status(403).json({ message: "Forbidden" });
+    const userRole = req.user!.role as UserRole;
+    
+    // Check if user owns the category or has permission to edit all categories
+    const isOwner = category.userId === userId;
+    const canEditAll = hasPermission(userRole, "edit_categories");
+    
+    if (!isOwner && !canEditAll) {
+      return res.status(403).json({ message: "You don't have permission to update this category" });
     }
     
     try {
@@ -96,8 +102,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Category not found" });
     }
     
-    if (category.userId !== userId) {
-      return res.status(403).json({ message: "Forbidden" });
+    const userRole = req.user!.role as UserRole;
+    
+    // Check if user owns the category or has permission to delete categories
+    const isOwner = category.userId === userId;
+    const canDeleteAll = hasPermission(userRole, "delete_categories");
+    
+    if (!isOwner && !canDeleteAll) {
+      return res.status(403).json({ message: "You don't have permission to delete this category" });
     }
     
     const deleted = await storage.deleteCategory(categoryId);
@@ -142,8 +154,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Expense not found" });
     }
     
-    if (expense.userId !== userId) {
-      return res.status(403).json({ message: "Forbidden" });
+    const userRole = req.user!.role as UserRole;
+    
+    // Check if user owns the expense or has permission to view all expenses
+    const isOwner = expense.userId === userId;
+    const canViewAll = hasPermission(userRole, "edit_all_expenses");
+    
+    if (!isOwner && !canViewAll) {
+      return res.status(403).json({ message: "You don't have permission to view this expense" });
     }
     
     res.json(expense);
