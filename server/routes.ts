@@ -9,7 +9,17 @@ import { insertCategorySchema, insertExpenseSchema, UserRole } from "@shared/sch
 import { createReadStream } from "fs";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import ExcelJS from "exceljs";
-import { requirePermission, isResourceOwner } from "./permissions";
+import { requirePermission, isResourceOwner, hasPermission } from "./permissions";
+
+// Extended request type to handle file uploads
+interface RequestWithFile extends Request {
+  file?: {
+    filename: string;
+    path: string;
+    mimetype: string;
+    size: number;
+  };
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // setup authentication routes
@@ -140,7 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Create expense with receipt upload
-  app.post("/api/expenses", requireAuth, upload.single("receipt"), async (req, res) => {
+  app.post("/api/expenses", requireAuth, requirePermission("create_expense"), upload.single("receipt"), async (req: RequestWithFile, res) => {
     const userId = req.user!.id;
     
     try {
@@ -174,6 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update expense with receipt upload
   app.put("/api/expenses/:id", requireAuth, upload.single("receipt"), async (req, res) => {
     const userId = req.user!.id;
+    const userRole = req.user!.role as UserRole;
     const expenseId = parseInt(req.params.id);
     
     const expense = await storage.getExpense(expenseId);
@@ -181,8 +192,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Expense not found" });
     }
     
-    if (expense.userId !== userId) {
-      return res.status(403).json({ message: "Forbidden" });
+    // Check if user owns the expense or has permission to edit all expenses
+    const isOwner = expense.userId === userId;
+    const canEditAll = hasPermission(userRole, "edit_all_expenses");
+    
+    if (!isOwner && !canEditAll) {
+      return res.status(403).json({ message: "You don't have permission to update this expense" });
     }
     
     try {
@@ -194,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const expenseData = {
         ...JSON.parse(req.body.expense || "{}"),
-        userId,
+        userId: isOwner ? userId : expense.userId, // Preserve original userId if admin is editing
         receiptPath,
       };
       
@@ -213,6 +228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete expense
   app.delete("/api/expenses/:id", requireAuth, async (req, res) => {
     const userId = req.user!.id;
+    const userRole = req.user!.role as UserRole;
     const expenseId = parseInt(req.params.id);
     
     const expense = await storage.getExpense(expenseId);
@@ -220,8 +236,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Expense not found" });
     }
     
-    if (expense.userId !== userId) {
-      return res.status(403).json({ message: "Forbidden" });
+    // Check if user owns the expense or has permission to delete all expenses
+    const isOwner = expense.userId === userId;
+    const canDeleteAll = hasPermission(userRole, "delete_all_expenses");
+    
+    if (!isOwner && !canDeleteAll) {
+      return res.status(403).json({ message: "You don't have permission to delete this expense" });
     }
     
     await storage.deleteExpense(expenseId);
@@ -317,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ========== Report Routes ==========
   
   // Export expense report as PDF
-  app.get("/api/reports/pdf", requireAuth, async (req, res) => {
+  app.get("/api/reports/pdf", requireAuth, requirePermission("export_reports"), async (req, res) => {
     const userId = req.user!.id;
     const { startDate, endDate } = req.query;
     
@@ -438,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Export expense report as Excel
-  app.get("/api/reports/excel", requireAuth, async (req, res) => {
+  app.get("/api/reports/excel", requireAuth, requirePermission("export_reports"), async (req, res) => {
     const userId = req.user!.id;
     const { startDate, endDate } = req.query;
     
