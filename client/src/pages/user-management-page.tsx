@@ -18,10 +18,10 @@ export default function UserManagementPage() {
   
   // Fetch pending users
   const { 
-    data: pendingUsers, 
+    data: pendingUsers = [], 
     isLoading: isPendingLoading,
     error: pendingError
-  } = useQuery({
+  } = useQuery<User[]>({
     queryKey: ["/api/users/pending"],
     enabled: user?.role === "admin",
   });
