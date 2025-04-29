@@ -12,12 +12,23 @@ export const userRoles = [
 
 export type UserRole = typeof userRoles[number];
 
+export const userStatus = [
+  "pending",  // Waiting for admin approval
+  "active",   // Approved and active
+  "rejected", // Rejected by admin
+] as const;
+
+export type UserStatus = typeof userStatus[number];
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   name: text("name"),
+  email: text("email").notNull().unique(),
   role: text("role").$type<UserRole>().default("user"),
+  status: text("status").$type<UserStatus>().default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const categories = pgTable("categories", {
@@ -53,9 +64,12 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   name: true,
+  email: true,
   role: true,
+  status: true,
 }).extend({
   role: z.enum(userRoles).default("user"),
+  status: z.enum(userStatus).default("pending"),
 });
 
 export const insertCategorySchema = createInsertSchema(categories).pick({
