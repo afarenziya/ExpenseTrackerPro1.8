@@ -67,6 +67,14 @@ export function DateFilterComponent({ onFilterChange, initialOption = "this_mont
             This Month
           </Button>
           <Button
+            variant={selectedOption === "last_3_months" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleOptionChange("last_3_months")}
+            className="rounded-full"
+          >
+            Last 3 Months
+          </Button>
+          <Button
             variant={selectedOption === "this_quarter" ? "default" : "outline"}
             size="sm"
             onClick={() => handleOptionChange("this_quarter")}
@@ -80,7 +88,7 @@ export function DateFilterComponent({ onFilterChange, initialOption = "this_mont
             onClick={() => handleOptionChange("this_year")}
             className="rounded-full"
           >
-            This Year
+            Last 12 Months
           </Button>
         </div>
       </div>

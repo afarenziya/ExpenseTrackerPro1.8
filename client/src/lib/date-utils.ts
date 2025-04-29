@@ -6,8 +6,10 @@ export type DateRangeOption =
   | 'last_month' 
   | 'this_quarter' 
   | 'last_quarter' 
+  | 'last_3_months'
   | 'this_year' 
   | 'last_year'
+  | 'last_12_months'
   | 'custom';
 
 export function getDateFilter(option: DateRangeOption, customRange?: { start: Date, end: Date }): DateFilter {
@@ -15,9 +17,10 @@ export function getDateFilter(option: DateRangeOption, customRange?: { start: Da
   
   switch (option) {
     case 'this_month':
+      // From 1st day of current month to today
       return {
         startDate: startOfMonth(now),
-        endDate: endOfMonth(now)
+        endDate: now
       };
     case 'last_month':
       const lastMonth = subMonths(now, 1);
@@ -26,9 +29,10 @@ export function getDateFilter(option: DateRangeOption, customRange?: { start: Da
         endDate: endOfMonth(lastMonth)
       };
     case 'this_quarter':
+      // Last 3 months from today
       return {
-        startDate: startOfQuarter(now),
-        endDate: endOfQuarter(now)
+        startDate: subMonths(now, 3),
+        endDate: now
       };
     case 'last_quarter':
       const lastQuarter = subQuarters(now, 1);
@@ -36,16 +40,29 @@ export function getDateFilter(option: DateRangeOption, customRange?: { start: Da
         startDate: startOfQuarter(lastQuarter),
         endDate: endOfQuarter(lastQuarter)
       };
-    case 'this_year':
+    case 'last_3_months':
+      // Last 3 months from today
       return {
-        startDate: startOfYear(now),
-        endDate: endOfYear(now)
+        startDate: subMonths(now, 3),
+        endDate: now
+      };
+    case 'this_year':
+      // Last 12 months from today
+      return {
+        startDate: subMonths(now, 12),
+        endDate: now
       };
     case 'last_year':
       const lastYear = subYears(now, 1);
       return {
         startDate: startOfYear(lastYear),
         endDate: endOfYear(lastYear)
+      };
+    case 'last_12_months':
+      // Last 12 months from today
+      return {
+        startDate: subMonths(now, 12),
+        endDate: now
       };
     case 'custom':
       if (!customRange) {
@@ -58,7 +75,7 @@ export function getDateFilter(option: DateRangeOption, customRange?: { start: Da
     default:
       return {
         startDate: startOfMonth(now),
-        endDate: endOfMonth(now)
+        endDate: now
       };
   }
 }
