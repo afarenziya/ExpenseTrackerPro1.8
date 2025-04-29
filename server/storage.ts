@@ -14,7 +14,8 @@ import {
   type PaymentMethodDistribution, 
   type MonthlyExpense, 
   users,
-  type UserStatus
+  type UserStatus,
+  type UserRole
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -109,7 +110,7 @@ export class MemStorage implements IStorage {
         password: hashedPassword, 
         name: "Admin User", 
         email: "admin@ajayfarenziya.com",
-        role: "admin",
+        role: "admin" as UserRole,
         status: "active" as UserStatus,
         createdAt: new Date()
       },
@@ -118,7 +119,7 @@ export class MemStorage implements IStorage {
         password: hashedPassword, 
         name: "Accountant User", 
         email: "accountant@ajayfarenziya.com",
-        role: "accountant",
+        role: "accountant" as UserRole,
         status: "active" as UserStatus,
         createdAt: new Date()
       },
@@ -127,7 +128,7 @@ export class MemStorage implements IStorage {
         password: hashedPassword, 
         name: "Manager User", 
         email: "manager@ajayfarenziya.com",
-        role: "manager",
+        role: "manager" as UserRole,
         status: "active" as UserStatus,
         createdAt: new Date()
       },
@@ -136,7 +137,7 @@ export class MemStorage implements IStorage {
         password: hashedPassword, 
         name: "Regular User", 
         email: "user@ajayfarenziya.com",
-        role: "user", 
+        role: "user" as UserRole, 
         status: "active" as UserStatus,
         createdAt: new Date()
       },
