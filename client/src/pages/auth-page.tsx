@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { userLoginSchema, insertUserSchema } from "@shared/schema";
+import { 
+  userLoginSchema, 
+  insertUserSchema, 
+  passwordResetRequestSchema,
+  passwordResetSchema
+} from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,7 +34,19 @@ import {
   AlertTitle,
   AlertDescription 
 } from "@/components/ui/alert";
-import { Loader2, PieChart, CheckCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Loader2, PieChart, CheckCircle, Mail, KeyRound } from "lucide-react";
 
 // Extend schemas for better validation
 const loginSchema = userLoginSchema.extend({

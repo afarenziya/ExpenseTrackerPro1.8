@@ -112,3 +112,41 @@ export async function sendRejectionEmail(email: string, name: string): Promise<b
   
   return sendEmail({ to: email, subject, text, html });
 }
+
+export async function sendPasswordResetEmail(email: string, name: string, resetLink: string): Promise<boolean> {
+  const subject = 'Password Reset - AjayFarenziya Expense Manager';
+  const text = `
+    Hello ${name},
+    
+    You have requested to reset your password for AjayFarenziya Expense Manager.
+    
+    Please click on the link below to reset your password:
+    ${resetLink}
+    
+    This link will expire in 1 hour.
+    
+    If you did not request a password reset, please ignore this email.
+    
+    Best regards,
+    AjayFarenziya Team
+  `;
+  
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #1a73e8;">AjayFarenziya Expense Manager</h2>
+      <p>Hello ${name},</p>
+      <p>You have requested to reset your password for <strong>AjayFarenziya Expense Manager</strong>.</p>
+      <p>Please click on the button below to reset your password:</p>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${resetLink}" style="background-color: #1a73e8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Reset Password</a>
+      </p>
+      <p>Alternatively, you can copy and paste the following link in your browser:</p>
+      <p style="word-break: break-all;"><a href="${resetLink}" style="color: #1a73e8;">${resetLink}</a></p>
+      <p><strong>This link will expire in 1 hour.</strong></p>
+      <p>If you did not request a password reset, please ignore this email.</p>
+      <p>Best regards,<br>AjayFarenziya Team</p>
+    </div>
+  `;
+  
+  return sendEmail({ to: email, subject, text, html });
+}
