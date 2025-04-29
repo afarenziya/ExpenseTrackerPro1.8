@@ -81,7 +81,7 @@ export default function UserManagementPage() {
   };
   
   return (
-    <PermissionGuard requiredRole="admin">
+    <PermissionGuard permission="manage_users">
       <div className="container py-10">
         <Card className="mb-6">
           <CardHeader>

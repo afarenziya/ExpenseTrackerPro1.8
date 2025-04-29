@@ -10,7 +10,8 @@ import {
   Settings, 
   LogOut, 
   ChevronDown, 
-  PieChart 
+  PieChart,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -122,6 +123,14 @@ export function Sidebar() {
           text="Settings" 
           isActive={location === '/settings'} 
         />
+        {user?.role === "admin" && (
+          <NavItem 
+            href="/users" 
+            icon={<Users className="h-5 w-5" />} 
+            text="User Management" 
+            isActive={location === '/users'} 
+          />
+        )}
       </nav>
       
       <div className={cn(
