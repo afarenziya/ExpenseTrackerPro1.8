@@ -182,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update expense with receipt upload
-  app.put("/api/expenses/:id", requireAuth, upload.single("receipt"), async (req, res) => {
+  app.put("/api/expenses/:id", requireAuth, upload.single("receipt"), async (req: RequestWithFile, res) => {
     const userId = req.user!.id;
     const userRole = req.user!.role as UserRole;
     const expenseId = parseInt(req.params.id);

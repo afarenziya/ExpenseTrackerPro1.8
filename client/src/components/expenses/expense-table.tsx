@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { ExpenseWithCategory, DateFilter } from "@shared/schema";
 import { formatDate } from "@/lib/date-utils";
+import { PermissionGuard } from "@/components/ui/permission-guard";
 import { Eye, MoreVertical, Edit, Trash2, FileText } from "lucide-react";
 import { 
   Dialog, 
@@ -264,48 +266,52 @@ export function ExpenseTable({ dateFilter, limit, showViewAll = false }: Expense
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <Dialog open={showExpenseForm} onOpenChange={setShowExpenseForm}>
-                          <DialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            {selectedExpense && (
-                              <ExpenseForm 
-                                expenseId={selectedExpense.id} 
-                                onSuccess={() => setShowExpenseForm(false)} 
-                              />
-                            )}
-                          </DialogContent>
-                        </Dialog>
+                        <PermissionGuard permission="edit_all_expenses">
+                          <Dialog open={showExpenseForm} onOpenChange={setShowExpenseForm}>
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              {selectedExpense && (
+                                <ExpenseForm 
+                                  expenseId={selectedExpense.id} 
+                                  onSuccess={() => setShowExpenseForm(false)} 
+                                />
+                              )}
+                            </DialogContent>
+                          </Dialog>
+                        </PermissionGuard>
                         
-                        <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirm deletion</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this expense? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={handleDelete}
-                                className="bg-destructive hover:bg-destructive/90"
-                              >
+                        <PermissionGuard permission="delete_all_expenses">
+                          <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
+                                <Trash2 className="h-4 w-4 mr-2" />
                                 Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirm deletion</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this expense? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={handleDelete}
+                                  className="bg-destructive hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </PermissionGuard>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
