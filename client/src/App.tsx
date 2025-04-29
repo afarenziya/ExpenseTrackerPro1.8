@@ -15,7 +15,7 @@ import AuthPage from "@/pages/auth-page";
 import ResetPasswordPage from "@/pages/reset-password-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
-import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 function Router() {
   return (
@@ -33,7 +33,6 @@ function Router() {
   );
 }
 
-import { Footer } from "./components/layout/footer";
 
 function App() {
   return (
