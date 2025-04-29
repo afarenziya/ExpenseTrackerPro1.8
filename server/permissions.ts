@@ -1,117 +1,156 @@
-import { Request, Response, NextFunction } from "express";
-import { UserRole } from "@shared/schema";
+import { Request, Response, NextFunction } from 'express';
+import { UserRole } from '@shared/schema';
 
-// Define permission levels for each role from highest to lowest
-const roleHierarchy: Record<UserRole, number> = {
-  "admin": 100,
-  "manager": 80,
-  "accountant": 60,
-  "user": 10
+/**
+ * Permission levels for different features based on user roles
+ * 0 = No access
+ * 1 = Basic access (view/own)
+ * 2 = Advanced access (edit/all)
+ * 3 = Full access (delete/admin)
+ */
+export const featureAccess: Record<string, Record<UserRole, number>> = {
+  // Features for expense management
+  "create_expense": {
+    "admin": 3,
+    "accountant": 2,
+    "manager": 1,
+    "user": 1
+  },
+  "edit_all_expenses": {
+    "admin": 3,
+    "accountant": 2,
+    "manager": 1,
+    "user": 0
+  },
+  "delete_all_expenses": {
+    "admin": 3,
+    "accountant": 0,
+    "manager": 0,
+    "user": 0
+  },
+  
+  // Features for category management
+  "create_category": {
+    "admin": 3,
+    "accountant": 2,
+    "manager": 0,
+    "user": 0
+  },
+  "edit_categories": {
+    "admin": 3,
+    "accountant": 2,
+    "manager": 0,
+    "user": 0
+  },
+  "delete_categories": {
+    "admin": 3,
+    "accountant": 0,
+    "manager": 0,
+    "user": 0
+  },
+  
+  // Features for reports
+  "export_reports": {
+    "admin": 3,
+    "accountant": 2,
+    "manager": 1,
+    "user": 0
+  },
+  
+  // Features for user management
+  "manage_users": {
+    "admin": 3,
+    "accountant": 0,
+    "manager": 0,
+    "user": 0
+  }
 };
 
-// Define feature access by minimum required role level
-export const featureAccess: Record<string, number> = {
-  // Dashboard permissions
-  "view_dashboard": roleHierarchy.user,  // All users can view dashboard
-  
-  // Expense permissions
-  "create_expense": roleHierarchy.user,     // All users can create
-  "view_own_expenses": roleHierarchy.user,  // All users can view their own
-  "edit_own_expenses": roleHierarchy.user,  // All users can edit their own
-  "delete_own_expenses": roleHierarchy.user, // All users can delete their own
-  "view_all_expenses": roleHierarchy.accountant, // Accountants+ can view all
-  "edit_all_expenses": roleHierarchy.accountant, // Accountants+ can edit all
-  "delete_all_expenses": roleHierarchy.manager,  // Managers+ can delete all
-  
-  // Category permissions
-  "create_category": roleHierarchy.accountant, // Accountants+ can create
-  "view_categories": roleHierarchy.user,      // All users can view
-  "edit_categories": roleHierarchy.accountant, // Accountants+ can edit
-  "delete_categories": roleHierarchy.accountant, // Accountants+ can delete
-  
-  // Report permissions
-  "view_reports": roleHierarchy.user,       // All users can view
-  "export_reports": roleHierarchy.accountant, // Accountants+ can export
-  
-  // User management permissions
-  "view_users": roleHierarchy.manager,     // Managers+ can view users
-  "create_users": roleHierarchy.admin,     // Only admins can create
-  "edit_users": roleHierarchy.admin,       // Only admins can edit
-  "delete_users": roleHierarchy.admin,     // Only admins can delete
-  
-  // System settings permissions
-  "edit_settings": roleHierarchy.admin,   // Only admins can edit settings
-};
-
-// Check if user has permission to access a feature
+/**
+ * Check if a user has permission for a specific feature
+ * 
+ * @param userRole - The user's role
+ * @param feature - The feature to check permissions for
+ * @returns True if user has permission, false otherwise
+ */
 export function hasPermission(userRole: UserRole, feature: string): boolean {
-  const userLevel = roleHierarchy[userRole];
-  const requiredLevel = featureAccess[feature];
-  
-  if (requiredLevel === undefined) {
-    // If feature doesn't exist in permissions, deny access
+  if (!featureAccess[feature]) {
     return false;
   }
   
-  return userLevel >= requiredLevel;
+  // A minimum level of 1 is required for access
+  return (featureAccess[feature][userRole] || 0) >= 1;
 }
 
-// Middleware to check if user has permission to access a feature
+/**
+ * Middleware to require permission for a specific feature
+ * 
+ * @param feature - The feature to check permission for
+ * @returns Express middleware function
+ */
 export function requirePermission(feature: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Unauthorized" });
     }
     
-    const userRole = req.user.role as UserRole;
+    const userRole = req.user!.role as UserRole;
     
-    if (!hasPermission(userRole, feature)) {
-      return res.status(403).json({ 
-        message: "You don't have permission to access this feature"
-      });
+    if (hasPermission(userRole, feature)) {
+      return next();
+    } else {
+      return res.status(403).json({ message: "Insufficient permissions" });
     }
-    
-    next();
   };
 }
 
-// Middleware to check if user is accessing their own resource
+/**
+ * Middleware to check if user is the owner of a resource
+ * or has permission to access resources they don't own
+ * 
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next function
+ */
 export function isResourceOwner(req: Request, res: Response, next: NextFunction) {
-  const resourceUserId = parseInt(req.params.userId);
-  const currentUserId = req.user!.id;
-  
-  if (resourceUserId !== currentUserId) {
-    // If not resource owner, check if has permission to access all resources
-    const userRole = req.user!.role as UserRole;
-    
-    // Different permission checks for different resource types
-    let permissionRequired: string;
-    
-    if (req.path.includes("/expenses")) {
-      permissionRequired = "view_all_expenses";
-    } else if (req.path.includes("/categories")) {
-      permissionRequired = "edit_categories";
-    } else {
-      // Default to admin only for unspecified resource types
-      permissionRequired = "edit_users";
-    }
-    
-    if (!hasPermission(userRole, permissionRequired)) {
-      return res.status(403).json({ 
-        message: "You don't have permission to access this resource" 
-      });
-    }
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
   }
   
-  next();
+  const userId = req.user!.id;
+  const resourceUserId = parseInt(req.params.userId);
+  const userRole = req.user!.role as UserRole;
+  
+  // Allow if user is the resource owner
+  if (userId === resourceUserId) {
+    return next();
+  }
+  
+  // Allow if user has admin permissions
+  if (userRole === 'admin') {
+    return next();
+  }
+  
+  // Allow accountants to access all financial data
+  if (userRole === 'accountant' && 
+      (req.path.includes('/expenses') || req.path.includes('/reports'))) {
+    return next();
+  }
+  
+  return res.status(403).json({ message: "Access denied" });
 }
 
-// Helper function to get role display name
+/**
+ * Get a display name for a user role
+ * 
+ * @param role - The user role
+ * @returns User-friendly name for the role
+ */
 export function getRoleDisplayName(role: UserRole): string {
   const displayNames: Record<UserRole, string> = {
     "admin": "Administrator",
-    "manager": "Manager",
     "accountant": "Accountant",
+    "manager": "Manager",
     "user": "Regular User"
   };
   

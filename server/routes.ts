@@ -182,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update expense with receipt upload
-  app.put("/api/expenses/:id", requireAuth, upload.single("receipt"), async (req: RequestWithFile, res) => {
+  app.put("/api/expenses/:id", requireAuth, requirePermission("edit_all_expenses"), upload.single("receipt"), async (req: RequestWithFile, res) => {
     const userId = req.user!.id;
     const userRole = req.user!.role as UserRole;
     const expenseId = parseInt(req.params.id);
@@ -226,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Delete expense
-  app.delete("/api/expenses/:id", requireAuth, async (req, res) => {
+  app.delete("/api/expenses/:id", requireAuth, requirePermission("delete_all_expenses"), async (req, res) => {
     const userId = req.user!.id;
     const userRole = req.user!.role as UserRole;
     const expenseId = parseInt(req.params.id);
