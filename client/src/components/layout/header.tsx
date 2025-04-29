@@ -1,42 +1,203 @@
-import { useState } from "react";
-import { Bell, Plus } from "lucide-react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ExpenseForm } from "@/components/expenses/expense-form";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/use-auth";
+import { Menu, Home, DollarSign, PieChart, Tag, Settings, LogOut, UserCheck, Users, Moon, Sun } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
+import { useLocation } from "wouter";
 
-type HeaderProps = {
-  title: string;
-  subtitle?: string;
-};
-
-export function Header({ title, subtitle }: HeaderProps) {
-  const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
+export function Header() {
+  const { user, logoutMutation } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [location] = useLocation();
+  
+  // Close mobile menu when location changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location]);
+  
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+  
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+  
+  // Don't show the header on the auth page
+  if (location === "/auth" || location.startsWith("/reset-password")) {
+    return null;
+  }
   
   return (
-    <header className="mb-6 flex justify-between items-center">
-      <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
+    <header className="bg-background border-b border-border sticky top-0 z-10">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center">
+          <Link href="/">
+            <a className="text-lg md:text-xl font-bold text-primary hover:text-primary/90 transition-colors">
+              ExpenseTracker Made By Ajay Farenziya
+            </a>
+          </Link>
+        </div>
+        
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-6">
+          {user && (
+            <>
+              <div className="flex items-center gap-4">
+                <Link href="/dashboard">
+                  <Button variant="ghost" className="flex items-center gap-1">
+                    <Home className="h-4 w-4 mr-1" />
+                    Dashboard
+                  </Button>
+                </Link>
+                
+                <Link href="/expenses">
+                  <Button variant="ghost" className="flex items-center gap-1">
+                    <DollarSign className="h-4 w-4 mr-1" />
+                    Expenses
+                  </Button>
+                </Link>
+                
+                <Link href="/categories">
+                  <Button variant="ghost" className="flex items-center gap-1">
+                    <Tag className="h-4 w-4 mr-1" />
+                    Categories
+                  </Button>
+                </Link>
+                
+                <Link href="/reports">
+                  <Button variant="ghost" className="flex items-center gap-1">
+                    <PieChart className="h-4 w-4 mr-1" />
+                    Reports
+                  </Button>
+                </Link>
+                
+                {user.role === "admin" && (
+                  <Link href="/users">
+                    <Button variant="ghost" className="flex items-center gap-1">
+                      <Users className="h-4 w-4 mr-1" />
+                      Users
+                    </Button>
+                  </Link>
+                )}
+                
+                <Link href="/settings">
+                  <Button variant="ghost" className="flex items-center gap-1">
+                    <Settings className="h-4 w-4 mr-1" />
+                    Settings
+                  </Button>
+                </Link>
+                
+                <Button variant="ghost" onClick={toggleTheme} size="icon">
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={handleLogout}
+                  className="flex items-center gap-1"
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Logout
+                </Button>
+              </div>
+            </>
+          )}
+        </nav>
+        
+        {/* Mobile Menu Button */}
+        <div className="md:hidden">
+          <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
       
-      <div className="flex space-x-3">
-        <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>Add Expense</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <ExpenseForm onSuccess={() => setIsExpenseFormOpen(false)} />
-          </DialogContent>
-        </Dialog>
-        
-        <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 w-2 h-2 bg-destructive rounded-full"></span>
-        </Button>
-      </div>
+      {/* Mobile Navigation */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-background border-b border-border">
+          <div className="container mx-auto px-4 py-2 flex flex-col gap-2">
+            {user && (
+              <>
+                <Link href="/dashboard">
+                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                    <Home className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+                
+                <Link href="/expenses">
+                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Expenses
+                  </Button>
+                </Link>
+                
+                <Link href="/categories">
+                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                    <Tag className="h-4 w-4 mr-2" />
+                    Categories
+                  </Button>
+                </Link>
+                
+                <Link href="/reports">
+                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                    <PieChart className="h-4 w-4 mr-2" />
+                    Reports
+                  </Button>
+                </Link>
+                
+                {user.role === "admin" && (
+                  <Link href="/users">
+                    <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Users
+                    </Button>
+                  </Link>
+                )}
+                
+                <Link href="/settings">
+                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </Button>
+                </Link>
+                
+                <div className="flex gap-2 mt-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 flex items-center justify-center"
+                    onClick={toggleTheme}
+                  >
+                    {theme === "dark" ? (
+                      <>
+                        <Sun className="h-4 w-4 mr-2" />
+                        Light Mode
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="h-4 w-4 mr-2" />
+                        Dark Mode
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    className="flex-1 flex items-center justify-center"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

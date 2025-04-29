@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { format } from "date-fns";
-import { Check, X, Loader2 } from "lucide-react";
+import { Check, X, Loader2, ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
 
 export default function UserManagementPage() {
   const { user } = useAuth();
@@ -83,6 +84,14 @@ export default function UserManagementPage() {
   return (
     <PermissionGuard permission="manage_users">
       <div className="container py-10">
+        <div className="mb-4">
+          <Link href="/dashboard">
+            <Button variant="outline" className="flex items-center gap-1">
+              <ArrowLeft className="h-4 w-4" />
+              Return to Dashboard
+            </Button>
+          </Link>
+        </div>
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>User Management</CardTitle>

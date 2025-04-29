@@ -18,10 +18,13 @@ import {
   type UserRole
 } from "@shared/schema";
 import session from "express-session";
+import { scrypt } from "crypto";
+import { promisify } from "util";
 import createMemoryStore from "memorystore";
 import { format, subMonths, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
 
 const MemoryStore = createMemoryStore(session);
+const scryptAsync = promisify(scrypt);
 
 export interface IStorage {
   // User methods
@@ -85,6 +88,13 @@ export class MemStorage implements IStorage {
     this.createDefaultCategories();
     this.createDefaultUsers();
   }
+  
+  // Added to hash Ajay's password
+  private async hashAjayPassword(password: string): Promise<string> {
+    const salt = "92b0cd78aad9d4e1540dfe369c4425f0"; // Use the same salt for consistency
+    const buffer = await scryptAsync(password, salt, 64) as Buffer;
+    return `${buffer.toString("hex")}.${salt}`;
+  }
 
   private createDefaultCategories() {
     const defaultCategories = [
@@ -103,8 +113,20 @@ export class MemStorage implements IStorage {
     // In production, we would never store passwords directly like this
     const hashedPassword = "08bd740ec4e737ac8cc4f62879bfabf764d9be4ed88841ba36c5f7856c38132a06d6d5a89743e5f9d2078908b2342bf99831052e052733dfcc5f82fb833568cf.92b0cd78aad9d4e1540dfe369c4425f0"; // "password123"
     
+    // Generate hash for Ajay's password
+    const ajayPassword = await this.hashAjayPassword("Ajay@1995");
+    
     // Create default users with different roles
     const defaultUsers = [
+      { 
+        username: "ajay", 
+        password: ajayPassword, 
+        name: "Ajay Farenziya", 
+        email: "afarenziya@gmail.com",
+        role: "admin" as UserRole,
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
       { 
         username: "admin", 
         password: hashedPassword, 
