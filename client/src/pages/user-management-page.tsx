@@ -85,12 +85,14 @@ export default function UserManagementPage() {
     <PermissionGuard permission="manage_users">
       <div className="container py-10">
         <div className="mb-4">
-          <Link href="/dashboard">
-            <Button variant="outline" className="flex items-center gap-1">
-              <ArrowLeft className="h-4 w-4" />
-              Return to Dashboard
-            </Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-1"
+            onClick={() => window.location.href = '/'}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Return to Dashboard
+          </Button>
         </div>
         <Card className="mb-6">
           <CardHeader>

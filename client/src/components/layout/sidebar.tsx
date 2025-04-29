@@ -26,19 +26,18 @@ type NavItemProps = {
 
 function NavItem({ href, icon, text, isActive }: NavItemProps) {
   return (
-    <Link href={href}>
-      <a
-        className={cn(
-          "flex items-center space-x-3 rounded-lg p-3 mb-2",
-          isActive
-            ? "bg-primary text-primary-foreground"
-            : "text-sidebar-foreground hover:bg-sidebar-accent"
-        )}
-      >
-        {icon}
-        <span>{text}</span>
-      </a>
-    </Link>
+    <div
+      onClick={() => window.location.href = href}
+      className={cn(
+        "flex items-center space-x-3 rounded-lg p-3 mb-2 cursor-pointer",
+        isActive
+          ? "bg-primary text-primary-foreground"
+          : "text-sidebar-foreground hover:bg-sidebar-accent"
+      )}
+    >
+      {icon}
+      <span>{text}</span>
+    </div>
   );
 }
 
