@@ -35,9 +35,9 @@ export function Header() {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
           <Link href="/">
-            <a className="text-lg md:text-xl font-bold text-primary hover:text-primary/90 transition-colors">
+            <div className="text-lg md:text-xl font-bold text-primary hover:text-primary/90 transition-colors cursor-pointer">
               ExpenseTracker Made By Ajay Farenziya
-            </a>
+            </div>
           </Link>
         </div>
         
@@ -47,47 +47,59 @@ export function Header() {
             <>
               <div className="flex items-center gap-4">
                 <Link href="/dashboard">
-                  <Button variant="ghost" className="flex items-center gap-1">
-                    <Home className="h-4 w-4 mr-1" />
-                    Dashboard
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="flex items-center gap-1">
+                      <Home className="h-4 w-4 mr-1" />
+                      Dashboard
+                    </Button>
+                  </div>
                 </Link>
                 
                 <Link href="/expenses">
-                  <Button variant="ghost" className="flex items-center gap-1">
-                    <DollarSign className="h-4 w-4 mr-1" />
-                    Expenses
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      Expenses
+                    </Button>
+                  </div>
                 </Link>
                 
                 <Link href="/categories">
-                  <Button variant="ghost" className="flex items-center gap-1">
-                    <Tag className="h-4 w-4 mr-1" />
-                    Categories
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="flex items-center gap-1">
+                      <Tag className="h-4 w-4 mr-1" />
+                      Categories
+                    </Button>
+                  </div>
                 </Link>
                 
                 <Link href="/reports">
-                  <Button variant="ghost" className="flex items-center gap-1">
-                    <PieChart className="h-4 w-4 mr-1" />
-                    Reports
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="flex items-center gap-1">
+                      <PieChart className="h-4 w-4 mr-1" />
+                      Reports
+                    </Button>
+                  </div>
                 </Link>
                 
                 {user.role === "admin" && (
                   <Link href="/users">
-                    <Button variant="ghost" className="flex items-center gap-1">
-                      <Users className="h-4 w-4 mr-1" />
-                      Users
-                    </Button>
+                    <div>
+                      <Button variant="ghost" className="flex items-center gap-1">
+                        <UserCheck className="h-4 w-4 mr-1" />
+                        User Management
+                      </Button>
+                    </div>
                   </Link>
                 )}
                 
                 <Link href="/settings">
-                  <Button variant="ghost" className="flex items-center gap-1">
-                    <Settings className="h-4 w-4 mr-1" />
-                    Settings
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="flex items-center gap-1">
+                      <Settings className="h-4 w-4 mr-1" />
+                      Settings
+                    </Button>
+                  </div>
                 </Link>
                 
                 <Button variant="ghost" onClick={toggleTheme} size="icon">
@@ -122,47 +134,59 @@ export function Header() {
             {user && (
               <>
                 <Link href="/dashboard">
-                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
-                    <Home className="h-4 w-4 mr-2" />
-                    Dashboard
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                      <Home className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </div>
                 </Link>
                 
                 <Link href="/expenses">
-                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    Expenses
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      Expenses
+                    </Button>
+                  </div>
                 </Link>
                 
                 <Link href="/categories">
-                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
-                    <Tag className="h-4 w-4 mr-2" />
-                    Categories
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                      <Tag className="h-4 w-4 mr-2" />
+                      Categories
+                    </Button>
+                  </div>
                 </Link>
                 
                 <Link href="/reports">
-                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
-                    <PieChart className="h-4 w-4 mr-2" />
-                    Reports
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                      <PieChart className="h-4 w-4 mr-2" />
+                      Reports
+                    </Button>
+                  </div>
                 </Link>
                 
                 {user.role === "admin" && (
                   <Link href="/users">
-                    <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      Users
-                    </Button>
+                    <div>
+                      <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        User Management
+                      </Button>
+                    </div>
                   </Link>
                 )}
                 
                 <Link href="/settings">
-                  <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </Button>
+                  <div>
+                    <Button variant="ghost" className="w-full flex items-center justify-start gap-1">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Settings
+                    </Button>
+                  </div>
                 </Link>
                 
                 <div className="flex gap-2 mt-2">
