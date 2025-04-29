@@ -30,6 +30,10 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserStatus(id: number, status: UserStatus): Promise<User | undefined>;
   getPendingUsers(): Promise<User[]>;
+  updateUserLoginTime(id: number): Promise<User | undefined>;
+  createPasswordResetToken(email: string): Promise<string | null>;
+  getUserByResetToken(token: string): Promise<User | undefined>;
+  updateUserPassword(id: number, password: string): Promise<User | undefined>;
   
   // Category methods
   getCategories(userId: number): Promise<Category[]>;
@@ -193,13 +197,75 @@ export class MemStorage implements IStorage {
     this.users.set(id, updatedUser);
     return updatedUser;
   }
+  
+  async updateUserLoginTime(id: number): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, lastLogin: new Date() };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
+  async createPasswordResetToken(email: string): Promise<string | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return null;
+    
+    // Generate a random token
+    const token = Math.random().toString(36).substring(2, 15) + 
+                 Math.random().toString(36).substring(2, 15);
+    
+    // Set token expiry to 1 hour from now
+    const expiry = new Date();
+    expiry.setHours(expiry.getHours() + 1);
+    
+    // Update user with reset token
+    const updatedUser = { 
+      ...user, 
+      resetToken: token,
+      resetTokenExpiry: expiry 
+    };
+    
+    this.users.set(user.id, updatedUser);
+    return token;
+  }
+  
+  async getUserByResetToken(token: string): Promise<User | undefined> {
+    const now = new Date();
+    
+    return Array.from(this.users.values()).find(
+      (user) => 
+        user.resetToken === token && 
+        user.resetTokenExpiry && 
+        new Date(user.resetTokenExpiry) > now
+    );
+  }
+  
+  async updateUserPassword(id: number, password: string): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { 
+      ...user, 
+      password, 
+      resetToken: null, 
+      resetTokenExpiry: null 
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
     const user: User = { 
       ...insertUser, 
       id,
-      createdAt: new Date() 
+      createdAt: new Date(),
+      mobile: insertUser.mobile || null,
+      resetToken: null,
+      resetTokenExpiry: null,
+      lastLogin: null
     };
     this.users.set(id, user);
     

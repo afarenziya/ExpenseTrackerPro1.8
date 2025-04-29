@@ -26,8 +26,12 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   name: text("name"),
   email: text("email").notNull().unique(),
+  mobile: text("mobile"),
   role: text("role").$type<UserRole>().default("user"),
   status: text("status").$type<UserStatus>().default("pending"),
+  resetToken: text("reset_token"),
+  resetTokenExpiry: timestamp("reset_token_expiry"),
+  lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -65,11 +69,13 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   name: true,
   email: true,
+  mobile: true,
   role: true,
   status: true,
 }).extend({
   role: z.enum(userRoles).default("user"),
   status: z.enum(userStatus).default("pending"),
+  mobile: z.string().optional(),
 });
 
 export const insertCategorySchema = createInsertSchema(categories).pick({
@@ -103,9 +109,29 @@ export type PaymentMethod = typeof paymentMethods[number];
 export const userLoginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean().optional().default(false),
 });
 
 export type UserLogin = z.infer<typeof userLoginSchema>;
+
+export const passwordResetRequestSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+export type PasswordResetRequest = z.infer<typeof passwordResetRequestSchema>;
+
+export const passwordResetSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[0-9])/, "Password must contain at least one letter and one number"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+export type PasswordReset = z.infer<typeof passwordResetSchema>;
 
 export type ExpenseWithCategory = Expense & {
   category: Category;
