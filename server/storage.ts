@@ -53,14 +53,14 @@ export interface IStorage {
   getRecentExpenses(userId: number, limit: number): Promise<ExpenseWithCategory[]>;
   
   // Other
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any to avoid type issues with different session stores
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private categories: Map<number, Category>;
   private expenses: Map<number, Expense>;
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any for the session store type
   userCurrentId: number;
   categoryCurrentId: number;
   expenseCurrentId: number;

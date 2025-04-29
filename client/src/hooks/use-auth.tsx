@@ -15,7 +15,7 @@ type AuthContextType = {
   error: Error | null;
   loginMutation: UseMutationResult<SelectUser, Error, UserLogin>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  registerMutation: UseMutationResult<{ message: string, username: string }, Error, InsertUser>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -55,18 +55,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const registerMutation = useMutation<SelectUser, Error, InsertUser>({
+  const registerMutation = useMutation<{ message: string, username: string }, Error, InsertUser>({
     mutationFn: async (credentials: InsertUser) => {
       const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: (response) => {
       toast({
         title: "Registration successful",
-        description: `Welcome, ${user.name || user.username}!`,
+        description: response.message || "Your account is pending approval by an administrator.",
       });
-      setLocation("/");
+      // Don't auto redirect or set user data since approval is pending
     },
     onError: (error: Error) => {
       toast({
