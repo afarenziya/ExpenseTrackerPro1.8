@@ -1,4 +1,21 @@
-import { categories, expenses, type Category, type Expense, type InsertCategory, type InsertExpense, type InsertUser, type User, type ExpenseWithCategory, type DateFilter, type ExpenseSummary, type CategoryDistribution, type PaymentMethodDistribution, type MonthlyExpense, users } from "@shared/schema";
+import { 
+  categories, 
+  expenses, 
+  type Category, 
+  type Expense, 
+  type InsertCategory, 
+  type InsertExpense, 
+  type InsertUser, 
+  type User, 
+  type ExpenseWithCategory, 
+  type DateFilter, 
+  type ExpenseSummary, 
+  type CategoryDistribution, 
+  type PaymentMethodDistribution, 
+  type MonthlyExpense, 
+  users,
+  type UserStatus
+} from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { format, subMonths, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
@@ -9,7 +26,10 @@ export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserStatus(id: number, status: UserStatus): Promise<User | undefined>;
+  getPendingUsers(): Promise<User[]>;
   
   // Category methods
   getCategories(userId: number): Promise<Category[]>;
@@ -80,10 +100,42 @@ export class MemStorage implements IStorage {
     
     // Create default users with different roles
     const defaultUsers = [
-      { username: "admin", password: hashedPassword, name: "Admin User", role: "admin" as UserRole },
-      { username: "accountant", password: hashedPassword, name: "Accountant User", role: "accountant" as UserRole },
-      { username: "manager", password: hashedPassword, name: "Manager User", role: "manager" as UserRole },
-      { username: "user", password: hashedPassword, name: "Regular User", role: "user" as UserRole },
+      { 
+        username: "admin", 
+        password: hashedPassword, 
+        name: "Admin User", 
+        email: "admin@ajayfarenziya.com",
+        role: "admin",
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
+      { 
+        username: "accountant", 
+        password: hashedPassword, 
+        name: "Accountant User", 
+        email: "accountant@ajayfarenziya.com",
+        role: "accountant",
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
+      { 
+        username: "manager", 
+        password: hashedPassword, 
+        name: "Manager User", 
+        email: "manager@ajayfarenziya.com",
+        role: "manager",
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
+      { 
+        username: "user", 
+        password: hashedPassword, 
+        name: "Regular User", 
+        email: "user@ajayfarenziya.com",
+        role: "user", 
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
     ];
     
     // Create users if they don't exist
@@ -120,10 +172,35 @@ export class MemStorage implements IStorage {
       (user) => user.username === username,
     );
   }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email,
+    );
+  }
+  
+  async getPendingUsers(): Promise<User[]> {
+    return Array.from(this.users.values()).filter(
+      (user) => user.status === "pending"
+    );
+  }
+  
+  async updateUserStatus(id: number, status: UserStatus): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, status };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt: new Date() 
+    };
     this.users.set(id, user);
     
     // Create default categories for the new user

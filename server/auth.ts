@@ -46,6 +46,8 @@ export function setupAuth(app: Express) {
       const user = await storage.getUserByUsername(username);
       if (!user || !(await comparePasswords(password, user.password))) {
         return done(null, false);
+      } else if (user.status !== "active") {
+        return done(null, false, { message: "Account not active. Please wait for admin approval." });
       } else {
         return done(null, user);
       }
@@ -59,20 +61,44 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
-    const existingUser = await storage.getUserByUsername(req.body.username);
-    if (existingUser) {
-      return res.status(400).send("Username already exists");
+    try {
+      // Validate required fields
+      if (!req.body.email) {
+        return res.status(400).send("Email is required");
+      }
+
+      // Check if username already exists
+      const existingUsername = await storage.getUserByUsername(req.body.username);
+      if (existingUsername) {
+        return res.status(400).send("Username already exists");
+      }
+
+      // Check if email already exists
+      const existingEmail = await storage.getUserByEmail(req.body.email);
+      if (existingEmail) {
+        return res.status(400).send("Email already in use");
+      }
+
+      // Create user with pending status
+      const user = await storage.createUser({
+        ...req.body,
+        password: await hashPassword(req.body.password),
+        status: "pending",
+      });
+
+      // Send registration confirmation email
+      const { sendRegistrationEmail } = await import('./email');
+      await sendRegistrationEmail(user.email, user.name || user.username);
+
+      // Return success response (but don't log them in yet)
+      res.status(201).json({ 
+        message: "Registration successful. Your account is pending approval.", 
+        username: user.username 
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).send("Registration failed");
     }
-
-    const user = await storage.createUser({
-      ...req.body,
-      password: await hashPassword(req.body.password),
-    });
-
-    req.login(user, (err) => {
-      if (err) return next(err);
-      res.status(201).json(user);
-    });
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
