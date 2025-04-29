@@ -29,9 +29,9 @@ export function getDateFilter(option: DateRangeOption, customRange?: { start: Da
         endDate: endOfMonth(lastMonth)
       };
     case 'this_quarter':
-      // Last 3 months from today
+      // Last 6 months from today
       return {
-        startDate: subMonths(now, 3),
+        startDate: subMonths(now, 6),
         endDate: now
       };
     case 'last_quarter':

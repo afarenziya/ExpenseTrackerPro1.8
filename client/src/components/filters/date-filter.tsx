@@ -80,7 +80,7 @@ export function DateFilterComponent({ onFilterChange, initialOption = "this_mont
             onClick={() => handleOptionChange("this_quarter")}
             className="rounded-full"
           >
-            This Quarter
+            Last 6 Months
           </Button>
           <Button
             variant={selectedOption === "this_year" ? "default" : "outline"}
