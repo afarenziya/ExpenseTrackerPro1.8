@@ -5,10 +5,11 @@ import { setupAuth } from "./auth";
 import { upload } from "./multer";
 import { format, parseISO, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
 import { z } from "zod";
-import { insertCategorySchema, insertExpenseSchema } from "@shared/schema";
+import { insertCategorySchema, insertExpenseSchema, UserRole } from "@shared/schema";
 import { createReadStream } from "fs";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import ExcelJS from "exceljs";
+import { requirePermission, isResourceOwner } from "./permissions";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // setup authentication routes
@@ -32,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Create category
-  app.post("/api/categories", requireAuth, async (req, res) => {
+  app.post("/api/categories", requireAuth, requirePermission("create_category"), async (req, res) => {
     const userId = req.user!.id;
     
     try {
@@ -49,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update category
-  app.put("/api/categories/:id", requireAuth, async (req, res) => {
+  app.put("/api/categories/:id", requireAuth, requirePermission("edit_categories"), async (req, res) => {
     const userId = req.user!.id;
     const categoryId = parseInt(req.params.id);
     
@@ -76,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Delete category
-  app.delete("/api/categories/:id", requireAuth, async (req, res) => {
+  app.delete("/api/categories/:id", requireAuth, requirePermission("delete_categories"), async (req, res) => {
     const userId = req.user!.id;
     const categoryId = parseInt(req.params.id);
     

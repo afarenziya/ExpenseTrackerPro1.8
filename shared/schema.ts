@@ -2,12 +2,22 @@ import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision } f
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Define user roles
+export const userRoles = [
+  "admin",     // Full access to all features
+  "manager",   // Can view all expenses, approve, but limited settings access
+  "accountant", // Can manage expenses and reports
+  "user",      // Basic access (default)
+] as const;
+
+export type UserRole = typeof userRoles[number];
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   name: text("name"),
-  role: text("role").default("user"),
+  role: text("role").$type<UserRole>().default("user"),
 });
 
 export const categories = pgTable("categories", {
@@ -44,6 +54,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   name: true,
   role: true,
+}).extend({
+  role: z.enum(userRoles).default("user"),
 });
 
 export const insertCategorySchema = createInsertSchema(categories).pick({
