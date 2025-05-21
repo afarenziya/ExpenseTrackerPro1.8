@@ -111,33 +111,92 @@ export class MemStorage implements IStorage {
   }
   
   private async createDefaultUsers() {
-    // Only create Ajay Farenziya as the default user
+    // This is just for development/demo purposes
+    // In production, we would never store passwords directly like this
+    const hashedPassword = "08bd740ec4e737ac8cc4f62879bfabf764d9be4ed88841ba36c5f7856c38132a06d6d5a89743e5f9d2078908b2342bf99831052e052733dfcc5f82fb833568cf.92b0cd78aad9d4e1540dfe369c4425f0"; // "password123"
+    // Generate hash for Ajay's password
     const ajayPassword = await this.hashAjayPassword("Ajay@1995");
-    const user: User = {
-      id: this.userCurrentId++,
-      username: "Ajay Farenziya",
-      password: ajayPassword,
-      name: "Ajay Farenziya",
-      email: "afarenziya@gmail.com",
-      mobile: null,
-      role: "admin" as UserRole,
-      status: "active" as UserStatus,
-      createdAt: new Date(),
-      resetToken: null,
-      resetTokenExpiry: null,
-      lastLogin: null
-    };
-    this.users.set(user.id, user);
-    // Create default categories for Ajay
-    const defaultCategories = [
-      { name: "Office Supplies", color: "#1A73E8", userId: user.id },
-      { name: "Travel", color: "#34A853", userId: user.id },
-      { name: "Utilities", color: "#FBBC05", userId: user.id },
-      { name: "Marketing", color: "#EA4335", userId: user.id },
-      { name: "Office Rent", color: "#9C27B0", userId: user.id },
+    // Create default users with different roles
+    const defaultUsers = [
+      {
+        username: "Ajay Farenziya",
+        password: ajayPassword,
+        name: "Ajay Farenziya",
+        email: "afarenziya@gmail.com",
+        role: "admin" as UserRole,
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
+      {
+        username: "admin",
+        password: hashedPassword,
+        name: "Admin User",
+        email: "admin@ajayfarenziya.com",
+        role: "admin" as UserRole,
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
+      {
+        username: "accountant",
+        password: hashedPassword,
+        name: "Accountant User",
+        email: "accountant@ajayfarenziya.com",
+        role: "accountant" as UserRole,
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
+      {
+        username: "manager",
+        password: hashedPassword,
+        name: "Manager User",
+        email: "manager@ajayfarenziya.com",
+        role: "manager" as UserRole,
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
+      {
+        username: "user",
+        password: hashedPassword,
+        name: "Regular User",
+        email: "user@ajayfarenziya.com",
+        role: "user" as UserRole,
+        status: "active" as UserStatus,
+        createdAt: new Date()
+      },
     ];
-    for (const category of defaultCategories) {
-      await this.createCategory(category);
+    // Create users if they don't exist
+    for (const userData of defaultUsers) {
+      const existingUser = await this.getUserByUsername(userData.username);
+      if (!existingUser) {
+        const id = this.userCurrentId++;
+        // Ensure all required fields are properly typed
+        const user: User = {
+          id,
+          username: userData.username,
+          password: userData.password,
+          name: userData.name,
+          email: userData.email,
+          mobile: null,
+          role: userData.role as UserRole,
+          status: userData.status as UserStatus,
+          createdAt: userData.createdAt,
+          resetToken: null,
+          resetTokenExpiry: null,
+          lastLogin: null
+        };
+        this.users.set(id, user);
+        // Create default categories for each user
+        const defaultCategories = [
+          { name: "Office Supplies", color: "#1A73E8", userId: id },
+          { name: "Travel", color: "#34A853", userId: id },
+          { name: "Utilities", color: "#FBBC05", userId: id },
+          { name: "Marketing", color: "#EA4335", userId: id },
+          { name: "Office Rent", color: "#9C27B0", userId: id },
+        ];
+        for (const category of defaultCategories) {
+          await this.createCategory(category);
+        }
+      }
     }
   }
 
