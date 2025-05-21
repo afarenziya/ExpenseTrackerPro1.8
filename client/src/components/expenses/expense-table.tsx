@@ -43,7 +43,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BulkExpenseUploadButton } from "./bulk-expense-upload";
 
 type ExpenseTableProps = {
   dateFilter?: DateFilter;
@@ -145,7 +144,6 @@ export function ExpenseTable({ dateFilter, limit, showViewAll = false }: Expense
                 <a href="/expenses">View All</a>
               </Button>
             )}
-            <BulkExpenseUploadButton />
           </div>
         </div>
         

@@ -60,7 +60,7 @@ export const featureAccess: Record<string, Record<UserRole, number>> = {
   "manage_users": {
     "admin": 3,
     "accountant": 0,
-    "manager": 0,
+    "manager": 2,
     "user": 0
   }
 };

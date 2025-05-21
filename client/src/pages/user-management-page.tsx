@@ -54,6 +54,7 @@ export default function UserManagementPage() {
         variant: "default",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/users/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users/all"] }); // Invalidate all users list as well
     },
     onError: (error: Error) => {
       toast({

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { upload } from "./multer";
-import { format, parseISO, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { z } from "zod";
 import { insertCategorySchema, insertExpenseSchema, UserRole } from "@shared/schema";
 import { createReadStream } from "fs";
@@ -15,6 +15,7 @@ import { requirePermission, isResourceOwner, hasPermission } from "./permissions
 interface RequestWithFile extends Request {
   file?: {
     filename: string;
+    originalname: string;
     path: string;
     mimetype: string;
     size: number;
@@ -117,12 +118,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all users (admin and manager only)
+  app.get("/api/users/all", requireAuth, async (req, res) => {
+    if (req.user?.role !== "admin" && req.user?.role !== "manager") {
+      return res.status(403).json({ message: "Only administrators and managers can access this resource" });
+    }
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users", error });
+    }
+  });
+
   // ========== Category Routes ==========
   
   // Get all categories
   app.get("/api/categories", requireAuth, async (req, res) => {
     const userId = req.user!.id;
-    const categories = await storage.getCategories(userId);
+    const userRole = req.user!.role as UserRole;
+    // Admin/manager can see all categories
+    const all = userRole === "admin" || userRole === "manager";
+    const categories = await storage.getCategories(userId, all);
     res.json(categories);
   });
   
@@ -209,10 +226,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all expenses with optional date filtering
   app.get("/api/expenses", requireAuth, async (req, res) => {
     const userId = req.user!.id;
+    const userRole = req.user!.role as UserRole;
     const { startDate, endDate } = req.query;
-    
     let dateFilter = undefined;
-    
     if (startDate && endDate) {
       try {
         dateFilter = {
@@ -223,8 +239,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid date format" });
       }
     }
-    
-    const expenses = await storage.getExpenses(userId, dateFilter);
+    // Admin/manager can see all expenses
+    const all = userRole === "admin" || userRole === "manager";
+    const expenses = await storage.getExpenses(userId, dateFilter, all);
     res.json(expenses);
   });
   
@@ -348,33 +365,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     await storage.deleteExpense(expenseId);
     res.status(204).end();
-  });
-  
-  // Bulk create expenses
-  app.post("/api/expenses/bulk", requireAuth, requirePermission("create_expense"), async (req, res) => {
-    const userId = req.user!.id;
-    try {
-      const expenses = req.body.expenses;
-      if (!Array.isArray(expenses)) {
-        return res.status(400).json({ message: "Expenses must be an array" });
-      }
-      const createdExpenses = [];
-      for (const expense of expenses) {
-        // Attach userId to each expense
-        const expenseData = { ...expense, userId };
-        // Parse and validate
-        if (expenseData.date && typeof expenseData.date === "string") {
-          expenseData.date = new Date(expenseData.date);
-        }
-        const parsedData = insertExpenseSchema.parse(expenseData);
-        const created = await storage.createExpense(parsedData);
-        createdExpenses.push(created);
-      }
-      res.status(201).json(createdExpenses);
-    } catch (error) {
-      console.error("Error creating bulk expenses:", error);
-      res.status(400).json({ message: "Invalid bulk expense data", error });
-    }
   });
   
   // ========== Dashboard Routes ==========
