@@ -185,80 +185,6 @@ export function ExpenseTable({ dateFilter, limit, showViewAll = false }: Expense
                     maximumFractionDigits: 0
                   })}</TableCell>
                   <TableCell className="text-right">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => setSelectedExpense(expense)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Expense Details</DialogTitle>
-                        </DialogHeader>
-                        {selectedExpense && (
-                          <div className="space-y-4 py-2">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <p className="text-sm text-muted-foreground">Date</p>
-                                <p>{formatDate(selectedExpense.date)}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Category</p>
-                                <span 
-                                  className="px-2 py-1 text-xs rounded" 
-                                  style={{ 
-                                    backgroundColor: `${selectedExpense.category.color}20`, 
-                                    color: selectedExpense.category.color 
-                                  }}
-                                >
-                                  {selectedExpense.category.name}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Material/Service</p>
-                                <p>{selectedExpense.materialName}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Vendor</p>
-                                <p>{selectedExpense.vendorName}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Payment Method</p>
-                                <p>{selectedExpense.paymentMethod}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Amount</p>
-                                <p className="font-mono font-medium text-lg">₹{selectedExpense.amount.toLocaleString('en-IN')}</p>
-                              </div>
-                            </div>
-                            {selectedExpense.description && (
-                              <div>
-                                <p className="text-sm text-muted-foreground">Description</p>
-                                <p>{selectedExpense.description}</p>
-                              </div>
-                            )}
-                            {selectedExpense.receiptPath && (
-                              <div>
-                                <p className="text-sm text-muted-foreground">Receipt</p>
-                                <a 
-                                  href={selectedExpense.receiptPath} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline"
-                                >
-                                  View Receipt
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                    
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button 
@@ -285,7 +211,7 @@ export function ExpenseTable({ dateFilter, limit, showViewAll = false }: Expense
                               </DropdownMenuItem>
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl">
-                              {selectedExpense && (
+                              {selectedExpense && showExpenseForm && selectedExpense.id === expense.id && (
                                 <ExpenseForm
                                   expenseId={selectedExpense.id}
                                   onSuccess={() => {
