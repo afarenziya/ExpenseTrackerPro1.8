@@ -197,17 +197,18 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
   }
   
   return (
-    <div>
-      <div className="p-4 border-b">
-        <h3 className="text-lg font-medium">
+    <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-medium text-center text-gray-900 dark:text-gray-100">
           {expenseId ? 'Edit Expense' : 'Add New Expense'}
         </h3>
       </div>
-      
+
       <div className="p-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Date Field */}
               <FormField
                 control={form.control}
                 name="date"
@@ -218,7 +219,7 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
-                            variant={"outline"}
+                            variant="outline"
                             className={cn(
                               "pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
@@ -249,14 +250,15 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                   </FormItem>
                 )}
               />
-              
+
+              {/* Category Field */}
               <FormField
                 control={form.control}
                 name="categoryId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Expense Category</FormLabel>
-                    <Select 
+                    <Select
                       onValueChange={(value) => field.onChange(parseInt(value))}
                       value={field.value.toString()}
                     >
@@ -278,8 +280,9 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                 )}
               />
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            {/* Material and Vendor Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="materialName"
@@ -293,7 +296,7 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="vendorName"
@@ -308,8 +311,9 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                 )}
               />
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            {/* Amount and Payment Method Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="amount"
@@ -317,19 +321,19 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                   <FormItem>
                     <FormLabel>Amount (₹)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
+                      <Input
+                        type="number"
                         min="0"
                         step="0.01"
-                        placeholder="0.00" 
-                        {...field} 
+                        placeholder="0.00"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="paymentMethod"
@@ -355,7 +359,8 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                 )}
               />
             </div>
-            
+
+            {/* Description Field */}
             <FormField
               control={form.control}
               name="description"
@@ -363,21 +368,25 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                 <FormItem>
                   <FormLabel>Description/Notes</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Add any additional details about this expense"
                       className="resize-none"
                       rows={3}
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
+            {/* Receipt Upload Field */}
             <div className="space-y-2">
               <FormLabel>Upload Receipt (Optional)</FormLabel>
-              <div className="border-2 border-dashed border-input rounded-lg p-6 text-center cursor-pointer" onClick={() => document.getElementById('receipt-upload')?.click()}>
+              <div
+                className="border-2 border-dashed border-input rounded-lg p-6 text-center cursor-pointer"
+                onClick={() => document.getElementById("receipt-upload")?.click()}
+              >
                 <input
                   id="receipt-upload"
                   type="file"
@@ -386,30 +395,44 @@ export function ExpenseForm({ expenseId, onSuccess }: ExpenseFormProps) {
                   onChange={handleFileChange}
                 />
                 <div className="flex flex-col items-center justify-center space-y-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10 text-muted-foreground"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
                   </svg>
                   {selectedFile ? (
-                    <div className="text-sm">
-                      Selected: {selectedFile.name}
-                    </div>
+                    <div className="text-sm">Selected: {selectedFile.name}</div>
                   ) : (
                     <>
-                      <p className="text-sm text-muted-foreground">Drag and drop files here or click to browse</p>
-                      <p className="text-xs text-muted-foreground">Supported formats: PDF, JPG, PNG (Max 5MB)</p>
+                      <p className="text-sm text-muted-foreground">
+                        Drag and drop files here or click to browse
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Supported formats: PDF, JPG, PNG (Max 5MB)
+                      </p>
                     </>
                   )}
                 </div>
               </div>
             </div>
-            
+
+            {/* Form Actions */}
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" type="button" onClick={onSuccess}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {expenseId ? 'Update Expense' : 'Save Expense'}
+                {expenseId ? "Update Expense" : "Save Expense"}
               </Button>
             </div>
           </form>

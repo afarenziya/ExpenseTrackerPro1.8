@@ -350,6 +350,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).end();
   });
   
+  // Bulk create expenses
+  app.post("/api/expenses/bulk", requireAuth, requirePermission("create_expense"), async (req, res) => {
+    const userId = req.user!.id;
+    try {
+      const expenses = req.body.expenses;
+      if (!Array.isArray(expenses)) {
+        return res.status(400).json({ message: "Expenses must be an array" });
+      }
+      const createdExpenses = [];
+      for (const expense of expenses) {
+        // Attach userId to each expense
+        const expenseData = { ...expense, userId };
+        // Parse and validate
+        if (expenseData.date && typeof expenseData.date === "string") {
+          expenseData.date = new Date(expenseData.date);
+        }
+        const parsedData = insertExpenseSchema.parse(expenseData);
+        const created = await storage.createExpense(parsedData);
+        createdExpenses.push(created);
+      }
+      res.status(201).json(createdExpenses);
+    } catch (error) {
+      console.error("Error creating bulk expenses:", error);
+      res.status(400).json({ message: "Invalid bulk expense data", error });
+    }
+  });
+  
   // ========== Dashboard Routes ==========
   
   // Get expense summary

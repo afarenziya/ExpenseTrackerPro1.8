@@ -43,6 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { BulkExpenseUploadButton } from "./bulk-expense-upload";
 
 type ExpenseTableProps = {
   dateFilter?: DateFilter;
@@ -138,11 +139,14 @@ export function ExpenseTable({ dateFilter, limit, showViewAll = false }: Expense
           <h3 className="font-medium">
             {showViewAll ? "Recent Expenses" : "Expenses"}
           </h3>
-          {showViewAll && (
-            <Button variant="link" size="sm" asChild>
-              <a href="/expenses">View All</a>
-            </Button>
-          )}
+          <div className="flex gap-2 items-center">
+            {showViewAll && (
+              <Button variant="link" size="sm" asChild>
+                <a href="/expenses">View All</a>
+              </Button>
+            )}
+            <BulkExpenseUploadButton />
+          </div>
         </div>
         
         <div className="overflow-x-auto">
@@ -269,16 +273,25 @@ export function ExpenseTable({ dateFilter, limit, showViewAll = false }: Expense
                         <PermissionGuard permission="edit_all_expenses">
                           <Dialog open={showExpenseForm} onOpenChange={setShowExpenseForm}>
                             <DialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                              <DropdownMenuItem
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  setSelectedExpense(expense);
+                                  setShowExpenseForm(true);
+                                }}
+                              >
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl">
                               {selectedExpense && (
-                                <ExpenseForm 
-                                  expenseId={selectedExpense.id} 
-                                  onSuccess={() => setShowExpenseForm(false)} 
+                                <ExpenseForm
+                                  expenseId={selectedExpense.id}
+                                  onSuccess={() => {
+                                    setShowExpenseForm(false);
+                                    queryClient.invalidateQueries({ queryKey: ['/api/expenses'] });
+                                  }}
                                 />
                               )}
                             </DialogContent>

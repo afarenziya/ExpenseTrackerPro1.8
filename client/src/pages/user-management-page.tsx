@@ -26,24 +26,38 @@ export default function UserManagementPage() {
     queryKey: ["/api/users/pending"],
     enabled: user?.role === "admin",
   });
+
+  // Fetch all users
+  const {
+    data: allUsers = [],
+    isLoading: isAllUsersLoading,
+    error: allUsersError
+  } = useQuery<User[]>({
+    queryKey: ["/api/users/all"],
+    enabled: user?.role === "admin",
+  });
   
   // Approve user mutation
   const approveMutation = useMutation({
     mutationFn: async (userId: number) => {
       const res = await apiRequest("POST", `/api/users/${userId}/approve`);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to approve user");
+      }
       return await res.json();
     },
     onSuccess: () => {
       toast({
-        title: "User Approved",
+        title: "Success",
         description: "The user has been approved successfully.",
+        variant: "default",
       });
-      // Refresh the pending users list
       queryClient.invalidateQueries({ queryKey: ["/api/users/pending"] });
     },
     onError: (error: Error) => {
       toast({
-        title: "Approval Failed",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -54,19 +68,23 @@ export default function UserManagementPage() {
   const rejectMutation = useMutation({
     mutationFn: async (userId: number) => {
       const res = await apiRequest("POST", `/api/users/${userId}/reject`);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to reject user");
+      }
       return await res.json();
     },
     onSuccess: () => {
       toast({
-        title: "User Rejected",
+        title: "Success",
         description: "The user has been rejected successfully.",
+        variant: "default",
       });
-      // Refresh the pending users list
       queryClient.invalidateQueries({ queryKey: ["/api/users/pending"] });
     },
     onError: (error: Error) => {
       toast({
-        title: "Rejection Failed",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -79,6 +97,16 @@ export default function UserManagementPage() {
   
   const handleRejectUser = (userId: number) => {
     rejectMutation.mutate(userId);
+  };
+
+  const handleEditUser = (userId: number) => {
+    // Logic to edit user details (e.g., open a modal or navigate to an edit page)
+    console.log("Edit user", userId);
+  };
+
+  const handleDeleteUser = (userId: number) => {
+    // Logic to delete a user
+    console.log("Delete user", userId);
   };
   
   return (
@@ -202,8 +230,68 @@ export default function UserManagementPage() {
             )}
             
             {selectedTab === "all" && (
-              <div className="text-center py-8 text-muted-foreground">
-                All users list will be implemented in a future update.
+              <div>
+                <h3 className="text-lg font-medium mb-4">All Users</h3>
+
+                {isAllUsersLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : allUsersError ? (
+                  <div className="text-center text-destructive py-8">
+                    Failed to load all users
+                  </div>
+                ) : !allUsers || allUsers.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    No users found
+                  </div>
+                ) : (
+                  <div className="rounded-md border">
+                    <table className="min-w-full divide-y divide-border">
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-3 bg-muted text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
+                          <th className="px-4 py-3 bg-muted text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Username</th>
+                          <th className="px-4 py-3 bg-muted text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
+                          <th className="px-4 py-3 bg-muted text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Role</th>
+                          <th className="px-4 py-3 bg-muted text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                          <th className="px-4 py-3 bg-muted text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-card divide-y divide-border">
+                        {allUsers.map((user: User) => (
+                          <tr key={user.id}>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm">{user.name}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm">{user.username}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm">{user.email}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm">{user.role}</td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                                {user.status}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
+                              <Button 
+                                size="sm" 
+                                className="bg-blue-600 hover:bg-blue-700"
+                                onClick={() => handleEditUser(user.id)}
+                              >
+                                Edit
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => handleDeleteUser(user.id)}
+                              >
+                                Delete
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

@@ -67,19 +67,32 @@ export function setupAuth(app: Express) {
     try {
       // Validate required fields
       if (!req.body.email) {
-        return res.status(400).send("Email is required");
+        console.error("Registration error: Email is missing");
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      if (!req.body.username) {
+        console.error("Registration error: Username is missing");
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      if (!req.body.password) {
+        console.error("Registration error: Password is missing");
+        return res.status(400).json({ message: "Password is required" });
       }
 
       // Check if username already exists
       const existingUsername = await storage.getUserByUsername(req.body.username);
       if (existingUsername) {
-        return res.status(400).send("Username already exists");
+        console.error("Registration error: Username already exists");
+        return res.status(400).json({ message: "Username already exists" });
       }
 
       // Check if email already exists
       const existingEmail = await storage.getUserByEmail(req.body.email);
       if (existingEmail) {
-        return res.status(400).send("Email already in use");
+        console.error("Registration error: Email already in use");
+        return res.status(400).json({ message: "Email already in use" });
       }
 
       // Create user with pending status
@@ -90,17 +103,25 @@ export function setupAuth(app: Express) {
       });
 
       // Send registration confirmation email
-      const { sendRegistrationEmail } = await import('./email');
-      await sendRegistrationEmail(user.email, user.name || user.username);
+      try {
+        const { sendRegistrationEmail } = await import('./email');
+        await sendRegistrationEmail(user.email, user.name || user.username);
+      } catch (emailError) {
+        console.error("Email sending error:", emailError);
+        return res.status(500).json({ message: "Failed to send confirmation email", reason: emailError.message });
+      }
 
       // Return success response (but don't log them in yet)
       res.status(201).json({ 
-        message: "Registration successful. Your account is pending approval.", 
+        message: "Signup successful. Your account is pending approval.", 
         username: user.username 
       });
     } catch (error) {
       console.error("Registration error:", error);
-      res.status(500).send("Registration failed");
+      res.status(500).json({ 
+        message: "Registration failed", 
+        reason: error.message || "Unknown error occurred" 
+      });
     }
   });
 

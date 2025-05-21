@@ -60,11 +60,11 @@ export function ExpenseTrendChart() {
         <div className="flex items-center space-x-2 text-sm">
           <span className="flex items-center">
             <span className="w-3 h-3 bg-primary rounded-full inline-block mr-1"></span>
-            <span className="text-muted-foreground">2023</span>
+            <span className="text-muted-foreground">2025</span>
           </span>
           <span className="flex items-center">
             <span className="w-3 h-3 bg-muted-foreground rounded-full inline-block mr-1"></span>
-            <span className="text-muted-foreground">2022</span>
+            <span className="text-muted-foreground">2024</span>
           </span>
         </div>
       </CardHeader>

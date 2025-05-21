@@ -26,6 +26,7 @@ import { format, subMonths, startOfMonth, endOfMonth, startOfQuarter, endOfQuart
 const MemoryStore = createMemoryStore(session);
 const scryptAsync = promisify(scrypt);
 
+// Reverting to in-memory storage implementation
 export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
@@ -416,6 +417,16 @@ export class MemStorage implements IStorage {
     };
     this.expenses.set(id, expense);
     return expense;
+  }
+
+  // Bulk create expenses
+  async createExpensesBulk(expenses: InsertExpense[]): Promise<Expense[]> {
+    const created: Expense[] = [];
+    for (const expense of expenses) {
+      const newExpense = await this.createExpense(expense);
+      created.push(newExpense);
+    }
+    return created;
   }
 
   async updateExpense(id: number, expenseUpdate: Partial<InsertExpense>): Promise<Expense | undefined> {
